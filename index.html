@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocFlow — Production Document Editor</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/toolbar.css">
+  <link rel="stylesheet" href="css/editor.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/modal.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body class="theme-light">
+  
+  <div id="app">
+    
+    <!-- Topbar Header -->
+    <header class="topbar">
+      <div class="topbar-main">
+        <div class="logo-container">
+          <div class="logo-icon">D</div>
+          <span>DocFlow</span>
+        </div>
+        
+        <div class="doc-info">
+          <input type="text" id="doc-title" class="doc-title-input" value="Untitled Document" placeholder="Rename Document..." aria-label="Document Title">
+          <button id="doc-star-btn" class="star-btn" aria-label="Star Document">★</button>
+          <div id="save-indicator" class="save-badge saved">
+            <span>✓ Saved just now</span>
+          </div>
+        </div>
+        
+        <div class="topbar-right">
+          <!-- Quick Action Buttons -->
+          <button id="sidebar-toggle-btn" class="quick-action-btn" data-tooltip="Toggle Sidebar" aria-label="Toggle Sidebar">📁</button>
+          <button id="btn-fullscreen" class="quick-action-btn" data-tooltip="Toggle Fullscreen (F11)" aria-label="Toggle Fullscreen">⛶</button>
+          <button id="btn-theme-cycle" class="quick-action-btn" data-tooltip="Cycle Theme" aria-label="Cycle Theme">🌓</button>
+        </div>
+      </div>
+      
+      <!-- Topbar File Options Menu -->
+      <nav class="menu-bar">
+        <div class="menu-item">
+          <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">File</button>
+          <div class="menu-dropdown">
+            <button class="menu-option" id="menu-new-doc">New Document <span class="shortcut">Ctrl+N</span></button>
+            <button class="menu-option" id="menu-save-doc">Save <span class="shortcut">Ctrl+S</span></button>
+            <div class="menu-divider"></div>
+            <button class="menu-option" id="menu-import-file">Import Text/HTML...</button>
+            <button class="menu-option" id="menu-export-txt">Export as Plain Text (.txt)</button>
+            <button class="menu-option" id="menu-export-html">Export as HTML (.html)</button>
+            <button class="menu-option" id="menu-export-pdf">Export as PDF (.pdf)</button>
+            <div class="menu-divider"></div>
+            <button class="menu-option" id="menu-delete-doc">Delete Document</button>
+          </div>
+        </div>
+        <div class="menu-item">
+          <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">Edit</button>
+          <div class="menu-dropdown">
+            <button class="menu-option" id="menu-undo">Undo <span class="shortcut">Ctrl+Z</span></button>
+            <button class="menu-option" id="menu-redo">Redo <span class="shortcut">Ctrl+Shift+Z</span></button>
+            <div class="menu-divider"></div>
+            <button class="menu-option" id="menu-search">Search & Replace <span class="shortcut">Ctrl+F</span></button>
+          </div>
+        </div>
+        <div class="menu-item">
+          <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">Insert</button>
+          <div class="menu-dropdown">
+            <button class="menu-option" id="menu-insert-link">Hyperlink...</button>
+            <button class="menu-option" id="menu-insert-image">Image...</button>
+            <button class="menu-option" id="menu-insert-table">Table...</button>
+            <button class="menu-option" id="menu-insert-hr">Horizontal Rule</button>
+          </div>
+        </div>
+        <div class="menu-item">
+          <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">Format</button>
+          <div class="menu-dropdown">
+            <button class="menu-option" id="menu-format-bold">Bold <span class="shortcut">Ctrl+B</span></button>
+            <button class="menu-option" id="menu-format-italic">Italic <span class="shortcut">Ctrl+I</span></button>
+            <button class="menu-option" id="menu-format-underline">Underline <span class="shortcut">Ctrl+U</span></button>
+            <button class="menu-option" id="menu-format-clear">Clear Formatting</button>
+          </div>
+        </div>
+        <div class="menu-item">
+          <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">Help</button>
+          <div class="menu-dropdown">
+            <button class="menu-option" id="menu-help-shortcuts">Keyboard Shortcuts</button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Rich Text Editor Toolbar -->
+      <div class="toolbar-container">
+        <div class="toolbar-inner">
+          
+          <!-- History Group -->
+          <div class="toolbar-group">
+            <button id="btn-undo" class="toolbar-btn" data-tooltip="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+            <button id="btn-redo" class="toolbar-btn" data-tooltip="Redo (Ctrl+Shift+Z)" aria-label="Redo">↷</button>
+          </div>
+          
+          <!-- Typography Group -->
+          <div class="toolbar-group">
+            <div class="toolbar-select-wrapper">
+              <select id="font-family-select" class="toolbar-select" aria-label="Font Family">
+                <option value="Inter">Sans Serif (Inter)</option>
+                <option value="Lora">Serif (Lora)</option>
+                <option value="Merriweather">Serif (Merriweather)</option>
+                <option value="Fira Code">Monospace (Fira Code)</option>
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier New">Courier New</option>
+              </select>
+              <span class="toolbar-select-arrow">▼</span>
+            </div>
+            
+            <div class="toolbar-select-wrapper">
+              <select id="font-size-select" class="toolbar-select" aria-label="Font Size">
+                <option value="10">10pt</option>
+                <option value="12" selected>12pt</option>
+                <option value="14">14pt</option>
+                <option value="18">18pt</option>
+                <option value="24">24pt</option>
+                <option value="30">30pt</option>
+                <option value="36">36pt</option>
+              </select>
+              <span class="toolbar-select-arrow">▼</span>
+            </div>
+            
+            <div class="toolbar-select-wrapper">
+              <select id="block-format-select" class="toolbar-select" aria-label="Block Type">
+                <option value="P">Paragraph</option>
+                <option value="H1">Heading 1</option>
+                <option value="H2">Heading 2</option>
+                <option value="H3">Heading 3</option>
+                <option value="BLOCKQUOTE">Blockquote</option>
+                <option value="PRE">Code Block</option>
+              </select>
+              <span class="toolbar-select-arrow">▼</span>
+            </div>
+          </div>
+          
+          <!-- Styles Group -->
+          <div class="toolbar-group">
+            <button id="btn-bold" class="toolbar-btn" style="font-weight: 800;" data-tooltip="Bold (Ctrl+B)" aria-label="Bold">B</button>
+            <button id="btn-italic" class="toolbar-btn" style="font-style: italic;" data-tooltip="Italic (Ctrl+I)" aria-label="Italic">I</button>
+            <button id="btn-underline" class="toolbar-btn" style="text-decoration: underline;" data-tooltip="Underline (Ctrl+U)" aria-label="Underline">U</button>
+            <button id="btn-strike" class="toolbar-btn" style="text-decoration: line-through;" data-tooltip="Strikethrough" aria-label="Strikethrough">S</button>
+            
+            <!-- Text Color Button -->
+            <button id="text-color-picker-btn" class="toolbar-btn color-picker-btn" data-tooltip="Text Color" aria-label="Text Color">
+              <span>A</span>
+              <span class="color-bar" style="background-color: var(--text-main);"></span>
+            </button>
+            <!-- Text Color Popover -->
+            <div id="text-color-popover" class="color-popover">
+              <div class="color-swatch" style="background-color: #000000;" data-color="#000000"></div>
+              <div class="color-swatch" style="background-color: #ef4444;" data-color="#ef4444"></div>
+              <div class="color-swatch" style="background-color: #3b82f6;" data-color="#3b82f6"></div>
+              <div class="color-swatch" style="background-color: #10b981;" data-color="#10b981"></div>
+              <div class="color-swatch" style="background-color: #f59e0b;" data-color="#f59e0b"></div>
+              <div class="color-swatch" style="background-color: #8b5cf6;" data-color="#8b5cf6"></div>
+              <div class="color-swatch" style="background-color: #ec4899;" data-color="#ec4899"></div>
+              <div class="color-swatch" style="background-color: #6b7280;" data-color="#6b7280"></div>
+              <div class="color-swatch" style="background-color: #ffffff; border: 1px solid #ccc;" data-color="#ffffff"></div>
+              <div class="color-swatch" style="background-color: #06b6d4;" data-color="#06b6d4"></div>
+            </div>
+            
+            <!-- Highlight Color Button -->
+            <button id="bg-color-picker-btn" class="toolbar-btn color-picker-btn" data-tooltip="Highlight Color" aria-label="Highlight Color">
+              <span>✏</span>
+              <span class="color-bar" style="background-color: transparent;"></span>
+            </button>
+            <!-- Highlight Color Popover -->
+            <div id="bg-color-popover" class="color-popover">
+              <div class="color-swatch" style="background-color: transparent; border: 1px solid #ccc;" data-color="transparent" title="No color"></div>
+              <div class="color-swatch" style="background-color: #fef08a;" data-color="#fef08a"></div>
+              <div class="color-swatch" style="background-color: #bbf7d0;" data-color="#bbf7d0"></div>
+              <div class="color-swatch" style="background-color: #bfdbfe;" data-color="#bfdbfe"></div>
+              <div class="color-swatch" style="background-color: #fbcfe8;" data-color="#fbcfe8"></div>
+              <div class="color-swatch" style="background-color: #e9d5ff;" data-color="#e9d5ff"></div>
+              <div class="color-swatch" style="background-color: #fed7aa;" data-color="#fed7aa"></div>
+              <div class="color-swatch" style="background-color: #ffedd5;" data-color="#ffedd5"></div>
+              <div class="color-swatch" style="background-color: #cffafe;" data-color="#cffafe"></div>
+              <div class="color-swatch" style="background-color: #e2e8f0;" data-color="#e2e8f0"></div>
+            </div>
+          </div>
+          
+          <!-- Alignments Group -->
+          <div class="toolbar-group">
+            <button id="btn-align-left" class="toolbar-btn" data-tooltip="Align Left" aria-label="Align Left">▤</button>
+            <button id="btn-align-center" class="toolbar-btn" data-tooltip="Align Center" aria-label="Align Center">▧</button>
+            <button id="btn-align-right" class="toolbar-btn" data-tooltip="Align Right" aria-label="Align Right">▥</button>
+            <button id="btn-align-justify" class="toolbar-btn" data-tooltip="Justify" aria-label="Justify">▨</button>
+          </div>
+          
+          <!-- Lists & Indentation -->
+          <div class="toolbar-group">
+            <button id="btn-list-ul" class="toolbar-btn" data-tooltip="Unordered List" aria-label="Bullet List">•▤</button>
+            <button id="btn-list-ol" class="toolbar-btn" data-tooltip="Ordered List" aria-label="Numbered List">1▤</button>
+            <button id="btn-outdent" class="toolbar-btn" data-tooltip="Decrease Indent" aria-label="Outdent">⇦</button>
+            <button id="btn-indent" class="toolbar-btn" data-tooltip="Increase Indent" aria-label="Indent">⇨</button>
+          </div>
+          
+          <!-- Inserts & Tools -->
+          <div class="toolbar-group">
+            <button id="btn-link" class="toolbar-btn" data-tooltip="Insert Hyperlink" aria-label="Link">🔗</button>
+            <button id="btn-image" class="toolbar-btn" data-tooltip="Insert Image" aria-label="Image">🖼</button>
+            <button id="btn-table" class="toolbar-btn" data-tooltip="Insert Table" aria-label="Table">▦</button>
+            <button id="btn-search" class="toolbar-btn" data-tooltip="Search & Replace" aria-label="Search">🔍</button>
+            <button id="btn-clear-format" class="toolbar-btn" data-tooltip="Clear Formatting" aria-label="Clear formatting">❌</button>
+          </div>
+          
+        </div>
+      </div>
+    </header>
+    
+    <div class="app-body">
+      
+      <!-- Collapsible Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-inner">
+          
+          <!-- Action Buttons -->
+          <button id="new-doc-btn" class="new-doc-btn" aria-label="Create Document">+ New Document</button>
+          
+          <!-- Document List Panel -->
+          <div class="sidebar-section">
+            <div class="sidebar-section-title">Documents</div>
+            <div id="doc-list" class="doc-list">
+              <!-- Rendered Dynamically -->
+            </div>
+          </div>
+          
+          <!-- Templates Accordion -->
+          <div class="sidebar-panel">
+            <div class="sidebar-panel-header">Templates</div>
+            <div class="sidebar-panel-content">
+              <div class="templates-grid">
+                <div class="template-card" data-template="blank">
+                  <div class="template-card-icon">📄</div>
+                  <div class="template-card-name">Blank</div>
+                </div>
+                <div class="template-card" data-template="meeting">
+                  <div class="template-card-icon">📅</div>
+                  <div class="template-card-name">Meeting</div>
+                </div>
+                <div class="template-card" data-template="proposal">
+                  <div class="template-card-icon">💡</div>
+                  <div class="template-card-name">Proposal</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Document Outline Accordion -->
+          <div class="sidebar-panel open">
+            <div class="sidebar-panel-header">Document Outline</div>
+            <div class="sidebar-panel-content">
+              <div id="outline-list" class="outline-list">
+                <!-- Rendered Dynamically -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Statistics Accordion -->
+          <div class="sidebar-panel">
+            <div class="sidebar-panel-header">Document Statistics</div>
+            <div class="sidebar-panel-content">
+              <div class="stats-list">
+                <div class="stats-row"><span>Words:</span><span id="sidebar-words-val">0</span></div>
+                <div class="stats-row"><span>Characters:</span><span id="sidebar-chars-val">0</span></div>
+                <div class="stats-row"><span>Paragraphs:</span><span id="sidebar-paragraphs-val">0</span></div>
+                <div class="stats-row"><span>Read Time:</span><span id="sidebar-readtime-val">0 min read</span></div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </aside>
+      
+      <!-- Editor Workspace -->
+      <main class="workspace" id="editor-workspace">
+        <div class="editor-container">
+          <article class="editor-page" id="editor-page-element">
+            <div id="editor" class="editor-content" contenteditable="true" aria-label="Document text editor"></div>
+          </article>
+        </div>
+      </main>
+      
+    </div>
+    
+    <!-- Status Bar -->
+    <footer class="statusbar">
+      <div class="statusbar-left">
+        <div class="statusbar-item">
+          <span>Words:</span>
+          <strong id="words-count-val">0</strong>
+        </div>
+        <div class="statusbar-item words-count">
+          <span>Characters:</span>
+          <strong id="chars-count-val">0</strong>
+        </div>
+        <div class="statusbar-item">
+          <span>Paragraphs:</span>
+          <strong id="paragraphs-count-val">0</strong>
+        </div>
+        <div class="statusbar-item">
+          <span>Read Time:</span>
+          <strong id="read-time-val">0 min</strong>
+        </div>
+        <div class="statusbar-item">
+          <span id="cursor-position-val">Ln 1, Col 1</span>
+        </div>
+      </div>
+      
+      <div class="statusbar-right">
+        <div class="statusbar-item interactive" id="theme-status-btn" data-tooltip="Cycle Color Theme">
+          <span>Theme:</span>
+          <strong id="theme-status-label">Light</strong>
+        </div>
+        <div class="statusbar-item interactive" id="zoom-status-btn" data-tooltip="Scale Page Zoom">
+          <span>Zoom:</span>
+          <strong id="zoom-status-label">100%</strong>
+        </div>
+      </div>
+    </footer>
+    
+  </div>
+  
+  <!-- ================= MODALS ================= -->
+  
+  <!-- Insert Link Modal -->
+  <div id="modal-link-backdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Insert Hyperlink</h3>
+        <button class="modal-close-btn" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="link-url-input" class="form-label">Link URL (href)</label>
+          <input type="text" id="link-url-input" class="form-input" placeholder="https://example.com">
+        </div>
+        <div class="form-group">
+          <label for="link-text-input" class="form-label">Display Text (optional)</label>
+          <input type="text" id="link-text-input" class="form-input" placeholder="Type link text...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary">Cancel</button>
+        <button id="modal-link-confirm-btn" class="btn btn-primary">Apply Link</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insert Image Modal -->
+  <div id="modal-image-backdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Insert Image</h3>
+        <button class="modal-close-btn" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="image-file-input" class="form-label">Upload Image File</label>
+          <input type="file" id="image-file-input" class="form-input" accept="image/*" style="padding: 0.25rem;">
+        </div>
+        <div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin: -0.5rem 0;">— OR —</div>
+        <div class="form-group">
+          <label for="image-url-input" class="form-label">Image Source URL</label>
+          <input type="text" id="image-url-input" class="form-input" placeholder="https://site.com/image.png">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary">Cancel</button>
+        <button id="modal-image-confirm-btn" class="btn btn-primary">Insert Image</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insert Table Modal -->
+  <div id="modal-table-backdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Insert Grid Table</h3>
+        <button class="modal-close-btn" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="table-rows-input" class="form-label">Rows</label>
+            <input type="number" id="table-rows-input" class="form-input" min="1" max="15" value="3">
+          </div>
+          <div class="form-group">
+            <label for="table-cols-input" class="form-label">Columns</label>
+            <input type="number" id="table-cols-input" class="form-input" min="1" max="15" value="3">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary">Cancel</button>
+        <button id="modal-table-confirm-btn" class="btn btn-primary">Create Table</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Replace Modal -->
+  <div id="modal-search-backdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Search & Replace</h3>
+        <button class="modal-close-btn" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="search-input" class="form-label">Find Keyword</label>
+          <input type="text" id="search-input" class="form-input" placeholder="Keyword to find...">
+        </div>
+        <div class="form-group">
+          <label for="replace-input" class="form-label">Replace With</label>
+          <input type="text" id="replace-input" class="form-input" placeholder="Replacement text...">
+        </div>
+        
+        <div id="search-matches-label" style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">
+          Matches: 0 / 0
+        </div>
+      </div>
+      <div class="modal-footer" style="flex-wrap: wrap; gap: 0.5rem; justify-content: space-between;">
+        <div>
+          <button id="search-prev-btn" class="btn btn-secondary" style="padding: 0.4rem 0.6rem;">▲ Prev</button>
+          <button id="search-next-btn" class="btn btn-secondary" style="padding: 0.4rem 0.6rem;">▼ Next</button>
+        </div>
+        <div>
+          <button id="search-replace-btn" class="btn btn-secondary" style="background-color: var(--primary-light); color: var(--primary);">Replace</button>
+          <button id="search-replace-all-btn" class="btn btn-primary">Replace All</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Import File Input -->
+  <input type="file" id="file-import-input" accept=".txt,.html" style="display: none;">
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div id="modal-help-backdrop" class="modal-backdrop">
+    <div class="modal" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Keyboard Shortcuts</h3>
+        <button class="modal-close-btn" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body" style="gap: 0.5rem; max-height: 350px; overflow-y: auto;">
+        <div class="stats-row" style="border-bottom: 1px solid var(--border-color); padding: 0.25rem 0;">
+          <strong>Command</strong><strong>Shortcut</strong>
+        </div>
+        <div class="stats-row" style="padding: 0.2rem 0;"><span>Save Document</span><span>Ctrl + S</span></div>
+        <div class="stats-row" style="padding: 0.2rem 0;"><span>Undo Action</span><span>Ctrl + Z</span></div>
+        <div class="stats-row" style="padding: 0.2rem 0;"><span>Redo Action</span><span>Ctrl + Shift + Z</span></div>
+        <div class="stats-row" style="padding: 0.2rem 0;"><span>Print Document</span><span>Ctrl + P</span></div>
+        <div class="stats-row" style="padding: 0.2rem 0;"><span>Bold Selection</span><span>Ctrl + B</span></div>
+        <div class="stats-row" style="padding: 0.2rem 0;"><span>Italic Selection</span><span>Ctrl + I</span></div>
+        <div class="stats-row" style="padding: 0.2rem 0;"><span>Underline Selection</span><span>Ctrl + U</span></div>
+        <div class="stats-row" style="padding: 0.2rem 0;"><span>Toggle Fullscreen</span><span>F11 / F11-btn</span></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App Entry Bootstrapper Script -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
