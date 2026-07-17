@@ -1,0 +1,85 @@
+/* Theme Specific Styles and Adjustments */
+
+/* Dark Theme Adjustments */
+body.theme-dark img {
+  opacity: 0.85;
+  transition: opacity var(--transition-normal);
+}
+
+body.theme-dark img:hover {
+  opacity: 1;
+}
+
+body.theme-dark ::selection {
+  background-color: rgba(96, 165, 250, 0.3);
+  color: var(--text-main);
+}
+
+/* Sepia Theme Adjustments */
+body.theme-sepia ::selection {
+  background-color: rgba(140, 98, 57, 0.25);
+  color: var(--text-main);
+}
+
+body.theme-sepia img {
+  filter: sepia(0.35);
+  transition: filter var(--transition-normal);
+}
+
+body.theme-sepia img:hover {
+  filter: none;
+}
+
+/* Standard Highlight/Selection color for Light Theme */
+body ::selection {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: var(--text-main);
+}
+
+/* Print Stylesheet Overrides */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .topbar,
+  .sidebar,
+  .statusbar,
+  .toolbar-container,
+  .quick-action-btn,
+  .toast-container {
+    display: none !important;
+  }
+
+  .app-body {
+    display: block !important;
+    height: auto !important;
+  }
+
+  .workspace {
+    background-color: #ffffff !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  .editor-container {
+    display: block !important;
+  }
+
+  .editor-page {
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    transform: none !important;
+  }
+
+  .editor-content {
+    outline: none !important;
+  }
+}
